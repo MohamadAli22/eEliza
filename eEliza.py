@@ -37,7 +37,7 @@ class ActionEliza():
         'dec_rules':[
             {
                 'key': 'sorry',
-                'decomp': '* sorry *', (I am) sorry (about it)
+                'decomp': '* sorry *',
                 'reasmb_neutral': 
                 [
                     "We are not perfect, we can make mistakes. What else do you think about that ?",
@@ -117,8 +117,8 @@ class ActionEliza():
                     "I appreciate you are sharing this with me, what feelings come into mind when you think about this?",
                     "I hate that this happened, what else do you remember?",
                     "Do other memories come to mind when you think about it? Tell me more ?",
-                    "What else do you remember?",
-                    "Why does that memory come to mind ?"
+                    "I hate that this happened, What else do you remember?",
+                    "I hate that this happened, Why does that memory come to mind ?"
                 ],
                 'reasmb_dynamic_neutral': 
                 [
@@ -137,7 +137,7 @@ class ActionEliza():
                 ],
                 'reasmb_empathy':
                 [
-                    "This conversation is anonymous - so I have no way of knowing which conversations I’ve had with you before. Why do you think I should remember it now ?",
+                    "This conversation is anonymous - so I have no way of knowing which conversations I've had with you before. Why do you think I should remember it now ?",
                     "This conversation is anonymous - so I can't remember. What is important about it ?"
                 ],
                 'reasmb_dynamic_neutral': 
@@ -261,7 +261,7 @@ class ActionEliza():
                 ],
                 'reasmb_empathy':
                 [
-                    "Computers… why do you raise this ?",
+                    "Computers... why do you raise this ?",
                     "What makes you think about computers ?",
                     "Thank you for sharing this with me, what makes you think about this topic?",
                     "That's an interesting thought, can you tell me more what makes you think that?",
@@ -700,9 +700,8 @@ class ActionEliza():
                 'reasmb_empathy':
                 [
                     "Thank you for trusting me with that information, can I ask if you can tell me a bit more?",
-                    "I appreciate that you are sharing this with me and hope you are doing okay...",
+                    "I appreciate that you are sharing this with me and hope you are doing okay, can I ask if you can tell me a bit more?",
                     "That sounds like this has really affected you, can you tell me more?",
-                    "Why do you say that?"
                 ],
                 'reasmb_dynamic_neutral': 
                 [
@@ -1177,7 +1176,7 @@ class ActionEliza():
                 if tag[0] not in ("i", "am"): 
                     ranking['score'] += 1
                 else:
-                    ranking['score'] += 0.3
+                    ranking['score'] += 0.2
 
             if tag[1] in most_simillar_keys_from_CosSimilarity:
                 ranking['score']+=10
@@ -1247,17 +1246,20 @@ class ActionEliza():
             res = ""
             if type(index) is not dict:
                 res = result.groups()[int(index)-1]
-                res = res.replace(' yourself', ' Myself')\
-                    .replace(' myself', ' Yourself')\
+                res = res+"<end_mark>"
+                res = res.replace(' yourself<end_mark>', ' Myself')\
+                    .replace(' myself<end_mark>', ' Yourself')\
                     .replace(' you ', ' I ')\
                     .replace(' i ', ' You ')\
                     .replace(" i'm ", ' You are ')\
                     .replace(' my ', ' Your ')\
                     .replace('my ', 'Your ')\
                     .replace(' am ', ' are ')\
-                    .replace(' me', ' You')\
-                    .replace(' noone', ' no one')\
-                    .replace(' me ', ' You ')
+                    .replace(' me<end_mark>', ' You')\
+                    .replace(' noone<end_mark>', ' no one')\
+                    .replace(' me ', ' You ')\
+                    .replace('<end_mark>', '')
+                
                 generated_response = generated_response.replace("("+str(index)+")", res)
             else:
                 if int(index['new']) != int(index['old']) and int(index['old'])-1 > 0 and int(index['new'])-1>0:
@@ -1265,17 +1267,21 @@ class ActionEliza():
                 else:
                     res = result.groups()[int(index['new'])-1]
 
-                res = res.replace(' yourself', ' Myself')\
-                .replace(' myself', ' Yourself')\
+
+                res = res+"<end_mark>"
+                res = res.replace(' yourself<end_mark>', ' Myself')\
+                .replace(' myself<end_mark>', ' Yourself')\
                 .replace(' you ', ' I ')\
                 .replace(' i ', ' You ')\
                 .replace(" i'm ", ' You are ')\
                 .replace(' my ', ' Your ')\
                 .replace('my ', 'Your ')\
                 .replace(' am ', ' are ')\
-                .replace(' me', ' You')\
-                .replace(' noone', ' no one')\
-                .replace(' me ', ' You ')
+                .replace(' me<end_mark>', ' You')\
+                .replace(' noone<end_mark>', ' no one')\
+                .replace(' me ', ' You ')\
+                .replace('<end_mark>', '')
+
                 generated_response = generated_response.replace("("+str(index['old'])+")", res)
             
         generated_response = generated_response.replace("  ", " ").replace(". .", ".").replace(". ?", "?").replace("? .", ".").replace("..", ".").replace(".?", "?").replace("?.", ".").replace("' ", "")
@@ -1284,7 +1290,7 @@ class ActionEliza():
         
     #this is the main function which generates final response
     def generate_final_response(self, user_sentence, num_run_eliza, generate_from_reasmbl3):
-        user_sentence = user_sentence[:-1]
+        # user_sentence = user_sentence[:-1]
         user_sentence = user_sentence.replace("  ", " ").replace(" no one ", " noone ")
         reasmb_rule = 'reasmb_empathy'
         if num_run_eliza>1: reasmb_rule = 'reasmb_neutral'
@@ -1437,8 +1443,9 @@ args = parser.parse_args()
 
 test_cases = [  
     # "that is my desire to find someone who loves me"
-    # ,"I do not feel good right now"
-    # ,"I do not like my brother."
+    # "I do not feel good right now"
+    # "I do not like my brother.",
+    "I remember I had stressful days"
     # ,"they are bad"
     # ,"I remember it was cold the first Winter of the Edmonton"
     # ,"my childhood, I remember it was very good."
@@ -1446,16 +1453,16 @@ test_cases = [
     # ,"I hate my family, because I do not like how they treat me."
     # ,"I hate my husband, because he is not responsible."
     # ,"sorry",
-    "I am very sorry for my neighbour."
-    ,"I'm sorry to keep you waiting."
-    ,"He suddenly felt sorry for her and was vaguely conscious that he might be the cause of the sadness her face expressed."
-    ,"I remember my childhood was so beautiful."
-    ,"I also remember the beach, where for the first time I played in the sand."
-    ,"I will kill you if you come to me again."
-    ,"I dreamed about Annie all last night."
-    ,"I dreamed about him every night."
-    ,"are you a good bot?"
-    ,"I really thought that I am sick when I found out Alex was a Mexican"
+    # "I am very sorry for my neighbour."
+    # ,"I'm sorry to keep you waiting."
+    # ,"He suddenly felt sorry for her and was vaguely conscious that he might be the cause of the sadness her face expressed."
+    # ,"I remember my childhood was so beautiful."
+    # ,"I also remember the beach, where for the first time I played in the sand."
+    # ,"I will kill you if you come to me again."
+    # ,"I dreamed about Annie all last night."
+    # ,"I dreamed about him every night."
+    # ,"are you a good bot?"
+    # "I really thought that I am sick when I found out Alex was a Mexican"
     # ,"yes"
     # ,"no"
     # ,"can I help you?"
@@ -1491,14 +1498,16 @@ for input_sentence in test_cases:
         }
 
     eEliza = ActionEliza()
+    # rule_based_key_resp = eEliza.generate_final_response(input_sentence, 3, False)
     ### emotion detection
-    detectedEmotion = eEliza.detect_emotion(input_sentence)
-    test_data[input_sentence]["detected_emotion"] = detectedEmotion
-    print('\n\n\n')
+    # detectedEmotion = eEliza.detect_emotion(input_sentence)
+    # test_data[input_sentence]["detected_emotion"] = detectedEmotion
+    # print('\n\n\n')
+
     ### static response from rule based
     print('\n\n\nStatic response from rule based')
     start = datetime.now()
-    rule_based_key_resp = eEliza.generate_final_response(input_sentence, 3, False)
+    rule_based_key_resp = eEliza.generate_final_response(input_sentence, 0, False)
     statistics['calculation_time_sum']['static rulebased'] += (datetime.now()-start).microseconds
     keyword = rule_based_key_resp["key"] 
     rule_based_resp = rule_based_key_resp["response"] 
@@ -1507,7 +1516,7 @@ for input_sentence in test_cases:
     ### Dynamic response from rule based
     print('\n\n\nDynamic response from rule based')
     start = datetime.now()
-    rule_based_dynamic_key_resp = eEliza.generate_final_response(input_sentence, 3, False)
+    rule_based_dynamic_key_resp = eEliza.generate_final_response(input_sentence, 0, True)
     statistics['calculation_time_sum']['dynamic rulebased'] += (datetime.now()-start).microseconds
     dynamic_keyword = rule_based_dynamic_key_resp["key"] 
     dynamic_rule_based_resp = rule_based_dynamic_key_resp["response"] 
@@ -1515,44 +1524,44 @@ for input_sentence in test_cases:
 
 
     ## T5 using emotion and rule
-    start = datetime.now()
-    t5_resp = eEliza.generate_response_by_T5(dynamic_rule_based_resp, detectedEmotion)
-    statistics['calculation_time_sum']['t5'] += (datetime.now()-start).microseconds
-    test_data[input_sentence]["t5"]["output"] = t5_resp
+    # start = datetime.now()
+    # t5_resp = eEliza.generate_response_by_T5(dynamic_rule_based_resp, detectedEmotion)
+    # statistics['calculation_time_sum']['t5'] += (datetime.now()-start).microseconds
+    # test_data[input_sentence]["t5"]["output"] = t5_resp
 
     ### T0 using emotion and rule
     # t0_resp = eEliza.generate_response_by_T0(rule_based_resp, detectedEmotion)
 
     ### T5 v1.1 using emotion and rule
-    start = datetime.now()
-    t5v11_resp = eEliza.generate_response_by_t5_v1_1(dynamic_rule_based_resp, detectedEmotion)
-    statistics['calculation_time_sum']['t5v11'] += (datetime.now()-start).microseconds
-    test_data[input_sentence]["t5v11"]["output"] = t5v11_resp
+    # start = datetime.now()
+    # t5v11_resp = eEliza.generate_response_by_t5_v1_1(dynamic_rule_based_resp, detectedEmotion)
+    # statistics['calculation_time_sum']['t5v11'] += (datetime.now()-start).microseconds
+    # test_data[input_sentence]["t5v11"]["output"] = t5v11_resp
 
     ### GPT-2 response using emotion and keyword of the rule
-    start = datetime.now()
-    gpt2_resp = eEliza.generate_response_by_gpt2(dynamic_rule_based_resp, detectedEmotion, dynamic_keyword)
-    statistics['calculation_time_sum']['gpt-2'] += (datetime.now()-start).microseconds
-    test_data[input_sentence]["gpt-2"]["output"] = gpt2_resp
+    # start = datetime.now()
+    # gpt2_resp = eEliza.generate_response_by_gpt2(dynamic_rule_based_resp, detectedEmotion, dynamic_keyword)
+    # statistics['calculation_time_sum']['gpt-2'] += (datetime.now()-start).microseconds
+    # test_data[input_sentence]["gpt-2"]["output"] = gpt2_resp
 
 
     GLUE_CoLA_Score_rulebased = eEliza.calculate_CoLA_Score(rule_based_resp)
     test_data[input_sentence]["static rulebased"]["CoLA_score"] = GLUE_CoLA_Score_rulebased[1].item()
     GLUE_CoLA_Score_dynamic_rulebased = eEliza.calculate_CoLA_Score(dynamic_rule_based_resp)
     test_data[input_sentence]["dynamic rulebased"]["CoLA_score"] = GLUE_CoLA_Score_dynamic_rulebased[1].item()
-    GLUE_CoLA_Score_t5 = eEliza.calculate_CoLA_Score(t5_resp)
-    test_data[input_sentence]["t5"]["CoLA_score"] = GLUE_CoLA_Score_t5[1].item()
-    GLUE_CoLA_Score_t5_v11 = eEliza.calculate_CoLA_Score(t5v11_resp)
-    test_data[input_sentence]["t5v11"]["CoLA_score"] = GLUE_CoLA_Score_t5_v11[1].item()
-    GLUE_CoLA_Score_gpt2 = eEliza.calculate_CoLA_Score(gpt2_resp)
-    test_data[input_sentence]["gpt-2"]["CoLA_score"] = GLUE_CoLA_Score_gpt2[1].item()
+    # GLUE_CoLA_Score_t5 = eEliza.calculate_CoLA_Score(t5_resp)
+    # test_data[input_sentence]["t5"]["CoLA_score"] = GLUE_CoLA_Score_t5[1].item()
+    # GLUE_CoLA_Score_t5_v11 = eEliza.calculate_CoLA_Score(t5v11_resp)
+    # test_data[input_sentence]["t5v11"]["CoLA_score"] = GLUE_CoLA_Score_t5_v11[1].item()
+    # GLUE_CoLA_Score_gpt2 = eEliza.calculate_CoLA_Score(gpt2_resp)
+    # test_data[input_sentence]["gpt-2"]["CoLA_score"] = GLUE_CoLA_Score_gpt2[1].item()
 
     method_score = {
         "static rulebased": GLUE_CoLA_Score_rulebased[1].item(),
         "dynamic rulebased": GLUE_CoLA_Score_dynamic_rulebased[1].item(),
-        "t5": GLUE_CoLA_Score_t5[1].item(),
-        "t5v11": GLUE_CoLA_Score_t5_v11[1].item(),
-        "gpt-2": GLUE_CoLA_Score_gpt2[1].item(),
+        # "t5": GLUE_CoLA_Score_t5[1].item(),
+        # "t5v11": GLUE_CoLA_Score_t5_v11[1].item(),
+        # "gpt-2": GLUE_CoLA_Score_gpt2[1].item(),
     }
 
     max_val = max(method_score.values())
@@ -1571,7 +1580,7 @@ for input_sentence in test_cases:
 print("\n\n\nfor loop ended:", statistics)
 
 dataframe = pd.DataFrame.from_dict(test_data)
-dataframe.to_csv('11_20_out.csv', index=False)
+dataframe.to_csv('only_static_dynamic_result.csv', index=False)
 print(dataframe)
 
 
